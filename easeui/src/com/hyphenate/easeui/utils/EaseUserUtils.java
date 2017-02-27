@@ -11,7 +11,6 @@ import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.controller.EaseUI;
 import com.hyphenate.easeui.controller.EaseUI.EaseUserProfileProvider;
 import com.hyphenate.easeui.domain.EaseUser;
-import com.hyphenate.easeui.domain.User;
 
 public class EaseUserUtils {
     
@@ -37,11 +36,11 @@ public class EaseUserUtils {
      * @param username
      * @return
      */
-    public static User getAppUserInfo(String username){
+/*    public static User getAppUserInfo(String username){
         if(userProvider != null)
             return userProvider.getAppUser(username);
         return null;
-    }
+    }*/
     /**
      * set user avatar
      * @param username
@@ -62,9 +61,9 @@ public class EaseUserUtils {
     }
     /**
      * set user avatar
-     * @param username
+     * @param
      */
-    public static void setAppUserAvatar(Context context, String username, ImageView imageView){
+/*    public static void setAppUserAvatar(Context context, String username, ImageView imageView){
         User user = getAppUserInfo(username);
         if(user != null && user.getAvatar() != null){
             try {
@@ -75,16 +74,12 @@ public class EaseUserUtils {
                 Glide.with(context).load(user.getAvatar()).diskCacheStrategy(DiskCacheStrategy.ALL).placeholder(R.drawable.default_hd_avatar).into(imageView);
             }
         } else if (username != null){
-//            可以从数据库中下载该陌生人的信息，由于这边不允许我们用IModelUser，所以不好直接写出
-//            提供一种下载陌生人头像方法，从总端服务器
-//                在EaseUserUitls工具类中创建一个一个方法getStrangerInfo(username);
-//            然后在接口EaseUserProfileProvider中定义该获取方法，自然会跳转到SuperWechatHelper中，在里面实现该接口方法
                  user = new User(username);
                 user.setAppUserAvatarByPath(context,user.getAvatar(),imageView);
         } else{
             Glide.with(context).load(R.drawable.default_hd_avatar).into(imageView);
         }
-    }
+    }*/
 
     public static void setAppUserAvatarByPath(Context context, String path, ImageView imageView,String groupId){
         if (path != null){
@@ -137,16 +132,16 @@ public class EaseUserUtils {
     /**
      * set user's nickname
      */
-    public static void setAppUserNick(String username,TextView textView){
-        if(textView != null){
-//            得到用户
-            User user = getAppUserInfo(username);
-            Log.e("easeUser",">>>>>>>"+user);
-            if(user != null && user.getMUserNick() != null){
-                textView.setText(user.getMUserNick());
-            }else{
-                textView.setText(username);
-            }
-        }
-    }
+//    public static void setAppUserNick(String username,TextView textView){
+//        if(textView != null){
+////            锟矫碉拷锟矫伙拷
+//            User user = getAppUserInfo(username);
+//            Log.e("easeUser",">>>>>>>"+user);
+//            if(user != null && user.getMUserNick() != null){
+//                textView.setText(user.getMUserNick());
+//            }else{
+//                textView.setText(username);
+//            }
+//        }
+//    }
 }
