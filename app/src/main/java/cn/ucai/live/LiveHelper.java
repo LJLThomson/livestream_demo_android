@@ -52,11 +52,15 @@ import cn.ucai.live.data.net.IModelUser;
 import cn.ucai.live.data.net.ModelUser;
 import cn.ucai.live.data.net.OnCompleteListener;
 import cn.ucai.live.ui.activity.ChatActivity;
+import cn.ucai.live.ui.activity.LoginActivity;
 import cn.ucai.live.ui.activity.MainActivity;
+import cn.ucai.live.utils.L;
 import cn.ucai.live.utils.PreferenceManager;
 
 
 public class LiveHelper {
+
+
     /**
      * data sync listener
      */
@@ -1164,5 +1168,33 @@ public class LiveHelper {
         ArrayList<User> mList = new ArrayList<User>();
         mList.addAll(appContactList.values());
         demoModel.saveAppContactList(mList);
+    }
+    public void asyncGetCurrentUserInfo(LoginActivity loginActivity) {
+        IModelUser modelUser = new ModelUser();
+        modelUser.getUserByName(loginActivity, EMClient.getInstance().getCurrentUser(), new OnCompleteListener<Result>() {
+            @Override
+            public void onSuccess(Result result) {
+                L.e("UserProfileManager", "result=" + result);
+                if (result != null) {
+                    User user = new Gson().fromJson(result.getRetData().toString(), User.class);
+                    if (user != null) {
+                        //	保存到SharePreference，也就是内存中
+//                        setCurrentUserNick(user.getMUserNick());
+                        PreferenceManager.getInstance().setCurrentUserNick(user.getMUserNick());
+//                        user.getAvatar得到头像
+//                        String path = "http://101.251.196.90:8000/SuperWeChatServerV2.0/downloadAvatar?name_or_hxid="+getMUserName()+"&avatarType=user_avatar&m_avatar_suffix="+getMAvatarSuffix()+"&updatetime="+getMAvatarLastUpdateTime();
+                        // name_or_hxid avatarType m_avatar_suffix
+                        PreferenceManager.getInstance().setCurrentUserAvatar(user.getAvatar());
+                        //保存到本地(自行创建)数据库 ,同时保存到集合中去了appContactList中，user，所以以后昵称，可以从user中得到
+                        LiveHelper.getInstance().saveAppContact(user);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
     }
 }

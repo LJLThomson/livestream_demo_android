@@ -8,18 +8,24 @@ import com.ucloud.live.UEasyStreaming;
 /**
  * Created by wei on 2016/5/27.
  */
-public class LiveApplication extends Application{
+public class LiveApplication extends Application {
 
-  private static LiveApplication instance;
+    private static LiveApplication instance;
 
-  @Override public void onCreate() {
-    super.onCreate();
-    instance = this;
-    EaseUI.getInstance().init(this, null);
-    UEasyStreaming.initStreaming("publish3-key");
-  }
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+        //init demo helper
+        LiveHelper.getInstance().init(instance);
+        EaseUI.getInstance().init(this, null);
+        UEasyStreaming.initStreaming("publish3-key");
+    }
 
-  public static LiveApplication getInstance(){
-    return instance;
-  }
+    public static LiveApplication getInstance() {
+        if (instance == null) {
+            instance = new LiveApplication();
+        }
+        return instance;
+    }
 }
