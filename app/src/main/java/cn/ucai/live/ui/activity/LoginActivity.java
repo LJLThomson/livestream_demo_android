@@ -6,7 +6,9 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,182 +32,214 @@ import cn.ucai.live.utils.MD5;
 public class LoginActivity extends BaseActivity {
 
 
-  // UI references.
-  private AutoCompleteTextView mEmailView;
-  private EditText mPasswordView;
-  private View mProgressView;
-  private View mLoginFormView;
+    // UI references.
+    private AutoCompleteTextView mEmailView;
+    private EditText mPasswordView;
+    private View mProgressView;
+    private View mLoginFormView;
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    if(EMClient.getInstance().isLoggedInBefore()){
-      startActivity(new Intent(this, MainActivity.class));
-      finish();
-      return;
-    }
-    setContentView(R.layout.activity_login);
-    // Set up the login form.
-    mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-
-    mPasswordView = (EditText) findViewById(R.id.password);
-    mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-      @Override public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-        if (id == R.id.login || id == EditorInfo.IME_NULL) {
-          attemptLogin();
-          return true;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+//        如果已经登录过，可以直接进入MainActivity界面
+        if (EMClient.getInstance().isLoggedInBefore()) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
         }
-        return false;
-      }
-    });
+        setContentView(R.layout.activity_login);
+        // Set up the login form.
+        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+
+        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                    attemptLogin();
+                    return true;
+                }
+                return false;
+            }
+        });
 
 
-    Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-    mEmailSignInButton.setOnClickListener(new OnClickListener() {
-      @Override public void onClick(View view) {
-        attemptLogin();
-      }
-    });
+        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptLogin();
+            }
+        });
 
-    mLoginFormView = findViewById(R.id.login_form);
-    mProgressView = findViewById(R.id.login_progress);
+        mLoginFormView = findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.login_progress);
 
-    findViewById(R.id.register).setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-      }
-    });
+        findViewById(R.id.register).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+            }
+        });
+        if (LiveHelper.getInstance().getCurrentUsernName() != null){
+            mEmailView.setText(LiveHelper.getInstance().getCurrentUsernName());
+        }
+//        用户名的监听事件
+        mEmailView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//				当用户名变化时，密码设置为null
+                mPasswordView.setText(null);
+//                也可以为其设置密码
+            }
 
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-  }
+            }
 
+            @Override
+            public void afterTextChanged(Editable s) {
 
-  /**
-   * Attempts to sign in or register the account specified by the login form.
-   * If there are form errors (invalid email, missing fields, etc.), the
-   * errors are presented and no actual login attempt is made.
-   */
-  private void attemptLogin() {
-    // Reset errors.
-    mEmailView.setError(null);
-    mPasswordView.setError(null);
-
-    // Store values at the time of the login attempt.
-    String email = mEmailView.getText().toString();
-    String password = mPasswordView.getText().toString();
-
-    boolean cancel = false;
-    View focusView = null;
-
-    // Check for a valid password, if the user entered one.
-    if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-      mPasswordView.setError(getString(R.string.error_invalid_password));
-      focusView = mPasswordView;
-      cancel = true;
+            }
+        });
+        if (LiveHelper.getInstance().getCurrentUsernName() != null) {
+            mEmailView.setText(LiveHelper.getInstance().getCurrentUsernName());
+        }
     }
 
-    // Check for a valid email address.
-    if (TextUtils.isEmpty(email)) {
-      mEmailView.setError(getString(R.string.error_field_required));
-      focusView = mEmailView;
-      cancel = true;
-    } else if (!isEmailValid(email)) {
-      mEmailView.setError(getString(R.string.error_invalid_email));
-      focusView = mEmailView;
-      cancel = true;
-    }
 
-    if (cancel) {
-      // There was an error; don't attempt login and focus the first
-      // form field with an error.
-      focusView.requestFocus();
-    } else {
-      // Show a progress spinner, and kick off a background task to
-      // perform the user login attempt.
-      showProgress(true);
+    /**
+     * Attempts to sign in or register the account specified by the login form.
+     * If there are form errors (invalid email, missing fields, etc.), the
+     * errors are presented and no actual login attempt is made.
+     */
+    private void attemptLogin() {
+        // Reset errors.
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
 
-      // After logout，the DemoDB may still be accessed due to async callback, so the DemoDB will be re-opened again.
-      // close it before login to make sure DemoDB not overlap
+        // Store values at the time of the login attempt.
+        String email = mEmailView.getText().toString();
+        String password = mPasswordView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+
+            // After logout，the DemoDB may still be accessed due to async callback, so the DemoDB will be re-opened again.
+            // close it before login to make sure DemoDB not overlap
 //        登录成功之后，关闭数据库
-      LiveDBManager.getInstance().closeDB();
+            LiveDBManager.getInstance().closeDB();
 
-      // reset current user name before login
-      LiveHelper.getInstance().setCurrentUserName(email);
-      LoginEMServer(email,password);
+            // reset current user name before login
+            LiveHelper.getInstance().setCurrentUserName(email);
+            LoginEMServer(email, password);
+        }
     }
-  }
 
-  private void LoginEMServer(String email, String password) {
-    EMClient.getInstance().login(email, MD5.getMessageDigest(password), new EMCallBack() {
-      @Override public void onSuccess() {
+    private void LoginEMServer(String email, String password) {
+        EMClient.getInstance().login(email, MD5.getMessageDigest(password), new EMCallBack() {
+            @Override
+            public void onSuccess() {
 //        startActivity(new Intent(LoginActivity.this, MainActivity.class));
 //        finish();
-        LiveHelper.getInstance().asyncGetCurrentUserInfo(LoginActivity.this);
+                LiveHelper.getInstance().asyncGetCurrentUserInfo(LoginActivity.this);
 //              登录成功之后，跳转到MainActivity界面
-        Intent intent = new Intent(LoginActivity.this,
-                MainActivity.class);
-        startActivity(intent);
+                Intent intent = new Intent(LoginActivity.this,
+                        MainActivity.class);
+                startActivity(intent);
 
-        finish();
-      }
+                finish();
+            }
 
-      @Override public void onError(int i, final String s) {
-        runOnUiThread(new Runnable() {
-          @Override
-          public void run() {
-            showProgress(false);
-            mPasswordView.setError(s);
-            mPasswordView.requestFocus();
-          }
+            @Override
+            public void onError(int i, final String s) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showProgress(false);
+                        mPasswordView.setError(s);
+                        mPasswordView.requestFocus();
+                    }
+                });
+            }
+
+            @Override
+            public void onProgress(int i, String s) {
+            }
         });
-      }
-
-      @Override public void onProgress(int i, String s) {
-      }
-    });
-  }
-
-  private boolean isEmailValid(String email) {
-    //TODO: Replace this with your own logic
-    return true;
-  }
-
-  private boolean isPasswordValid(String password) {
-    //TODO: Replace this with your own logic
-    return password.length() > 0;
-  }
-
-  /**
-   * Shows the progress UI and hides the login form.
-   */
-  @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2) private void showProgress(final boolean show) {
-    // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-    // for very easy animations. If available, use these APIs to fade-in
-    // the progress spinner.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-      int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-      mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-      mLoginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-        @Override public void onAnimationEnd(Animator animation) {
-          mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-      });
-
-      mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-      mProgressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-        @Override public void onAnimationEnd(Animator animation) {
-          mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
-      });
-    } else {
-      // The ViewPropertyAnimator APIs are not available, so simply show
-      // and hide the relevant UI components.
-      mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-      mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
     }
-  }
+
+    private boolean isEmailValid(String email) {
+        //TODO: Replace this with your own logic
+        return true;
+    }
+
+    private boolean isPasswordValid(String password) {
+        //TODO: Replace this with your own logic
+        return password.length() > 0;
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mLoginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
 
 }
 
