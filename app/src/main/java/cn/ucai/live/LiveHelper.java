@@ -1143,7 +1143,7 @@ public class LiveHelper {
      */
     public Map<String, User> getAppContactList() {
         if (isLoggedIn() && (appContactList == null || appContactList.size() == 0)) {
-//            从集合或者数据库中取数据
+//            从集合或者数据库中取数据，不是当前用户（也就是好友，直播项目没用）从数据库中取
             appContactList = demoModel.getAppContactList();
         }
 

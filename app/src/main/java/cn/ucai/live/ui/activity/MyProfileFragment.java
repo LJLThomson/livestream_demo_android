@@ -1,6 +1,6 @@
 package cn.ucai.live.ui.activity;
 
-import android.content.Intent;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,14 +8,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.hyphenate.EMCallBack;
+import com.hyphenate.easeui.utils.EaseUserUtils;
+import com.hyphenate.easeui.widget.EaseImageView;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import cn.ucai.live.LiveHelper;
 import cn.ucai.live.R;
 import cn.ucai.live.data.model.LiveSettings;
-import com.hyphenate.EMCallBack;
-import com.hyphenate.chat.EMClient;
+import cn.ucai.live.utils.MFGT;
+import cn.ucai.live.utils.PreferenceManager;
 
 public class MyProfileFragment extends Fragment {
     Unbinder unbinder;
@@ -24,7 +30,8 @@ public class MyProfileFragment extends Fragment {
     //@BindView(R.id.frame_rate)
     //TextView frameRateText;
     @BindView(R.id.tv_username) TextView usernameView;
-
+    @BindView(R.id.avatar)
+    EaseImageView userAvatar;
     LiveSettings liveSettings;
 
     @Nullable
@@ -39,9 +46,10 @@ public class MyProfileFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        usernameView.setText(EMClient.getInstance().getCurrentUser());
-
-
+//        usernameView.setText(EMClient.getInstance().getCurrentUser());
+//        设置头像和昵称，如果昵称不存在，则显示用户名
+        EaseUserUtils.setAppUserAvatar(getContext(),PreferenceManager.getInstance().getCurrentUsername(),userAvatar);
+        EaseUserUtils.setAppUserNick(PreferenceManager.getInstance().getCurrentUsername(),usernameView);
         //liveSettings = new LiveSettings(getContext());
         //final String[] bitrateArr = getResources().getStringArray(R.array.bitrate_types);
         //String curBitrate = String.valueOf(liveSettings.getVideoEncodingBitRate());
@@ -65,11 +73,22 @@ public class MyProfileFragment extends Fragment {
     }
 
     @OnClick(R.id.btn_logout) void onLogout(){
-        EMClient.getInstance().logout(false, new EMCallBack() {
+        final ProgressDialog pd = new ProgressDialog(getActivity());
+        String st = getResources().getString(R.string.Are_logged_out);
+        pd.setMessage(st);
+        pd.setCanceledOnTouchOutside(false);
+        pd.show();
+//   EMClient.getInstance().logout一回事
+        LiveHelper.getInstance().logout(false, new EMCallBack() {
             @Override
             public void onSuccess() {
-                getActivity().finish();
-                startActivity(new Intent(getActivity(), LoginActivity.class));
+//                getActivity().finish();
+//                startActivity(new Intent(getActivity(), LoginActivity.class));
+                pd.dismiss();
+                // show login screen
+//						getActivity().finish();
+//						startActivity(new Intent(getActivity(), LoginActivity.class));
+                MFGT.gotoNewLoginActivity(getActivity());
             }
 
             @Override
