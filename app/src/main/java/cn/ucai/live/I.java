@@ -282,4 +282,8 @@ public interface I {
     String REQUEST_DOWNLOAD_LOCATION = "downloadLocation";
 
     String BACK_MAIN_FROM_CHAT = "backmainfromchat";
+    /**
+     * 直播间请求数据
+     */
+    String REQUEST_GET_ALL_CHATROOM = "live/getAllChatRoom";
 }
