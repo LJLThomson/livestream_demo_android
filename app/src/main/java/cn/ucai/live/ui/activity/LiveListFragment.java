@@ -4,9 +4,11 @@ package cn.ucai.live.ui.activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -49,9 +51,7 @@ public class LiveListFragment extends Fragment {
     private boolean isFirstLoading = true;
     private boolean hasMoreData = true;
     private String cursor;
-    private int pagenum = 0;
     private final int pagesize = 20;
-    private int pageCount = -1;
     private LinearLayout footLoadingLayout;
     private ProgressBar footLoadingPB;
     private TextView footLoadingText;
@@ -61,6 +61,9 @@ public class LiveListFragment extends Fragment {
     RecyclerView recyclerView;
     GridLayoutManager gm;
     ProgressDialog pd;
+    SwipeRefreshLayout mRefreshLayout;
+    TextView mRefreshHint;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class LiveListFragment extends Fragment {
         rooms = new ArrayList<EMChatRoom>();
 //        adapter = new LiveAdapter(getContext(), getLiveRoomList(rooms));
         pd = new ProgressDialog(getContext());
+        pd.show();
         recyclerView = (RecyclerView) getView().findViewById(R.id.recycleview);
 //        View footView = getLayoutInflater().inflate(R.layout.em_listview_footer_view, gm, false);
 //        GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
@@ -86,12 +90,16 @@ public class LiveListFragment extends Fragment {
         recyclerView.addItemDecoration(new GridMarginDecoration(6));
 //        recyclerView.setAdapter(adapter);
 //        recyclerView.setAdapter(new LiveAdapter(getActivity(), TestDataRepository.getLiveRoomList()));
+        mRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.mRefreshLayout);
+        mRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW);
 
-//        footLoadingLayout = (LinearLayout) footView.findViewById(R.id.loading_layout);
-//        footLoadingPB = (ProgressBar)footView.findViewById(R.id.loading_bar);
-//        footLoadingText = (TextView) footView.findViewById(R.id.loading_text);
-//        listView.addFooterView(footView, null, false);
-//        footLoadingLayout.setVisibility(View.GONE);
+        mRefreshHint = (TextView) getView().findViewById(R.id.mRefreshHint);
+        footLoadingLayout = (LinearLayout) getView().findViewById(R.id.loading_layout);
+        footLoadingPB = (ProgressBar)getView().findViewById(R.id.loading_bar);
+        footLoadingText = (TextView) getView().findViewById(R.id.loading_text);
+//        listView.addFooterView(getView(), null, false);
+        footLoadingLayout.setVisibility(View.GONE);
+
         loadAndShowData();//加载并显示数据
         setListener();
     }
@@ -154,6 +162,17 @@ public class LiveListFragment extends Fragment {
 //                这里可以解决刷新之后，网络请求不到数据，我们可以设置
             }
         });
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mRefreshLayout.setRefreshing(true);//转动东西开始
+                mRefreshLayout.setEnabled(true);
+                mRefreshHint.setVisibility(View.VISIBLE);
+                cursor = null;
+                isFirstLoading = true;
+                loadAndShowData();
+            }
+        });
     }
 
     private void loadAndShowData(){
@@ -170,6 +189,8 @@ public class LiveListFragment extends Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
 //                            groupsList.addAll(returnGroups);
+                            mRefreshLayout.setRefreshing(false);
+                            mRefreshHint.setVisibility(View.GONE);
                             chatRoomList.addAll(chatRooms);
                             if(chatRooms.size() != 0){
                                 cursor = result.getCursor();
@@ -186,9 +207,9 @@ public class LiveListFragment extends Fragment {
                             }else{
                                 if(chatRooms.size() < pagesize){
                                     hasMoreData = false;
-//                                    footLoadingLayout.setVisibility(View.VISIBLE);
-//                                    footLoadingPB.setVisibility(View.GONE);
-//                                    footLoadingText.setText("No more data");
+                                    footLoadingLayout.setVisibility(View.VISIBLE);
+                                    footLoadingPB.setVisibility(View.GONE);
+                                    footLoadingText.setText("No more data");
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -200,9 +221,11 @@ public class LiveListFragment extends Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
                             isLoading = false;
+                            mRefreshLayout.setRefreshing(false);
+                            mRefreshHint.setVisibility(View.GONE);
 //                            pb.setVisibility(View.INVISIBLE);
                             pd.dismiss();
-//                            footLoadingLayout.setVisibility(View.GONE);
+                            footLoadingLayout.setVisibility(View.GONE);
                             Toast.makeText(getContext(), getResources().getString(R.string.failed_to_load_data), Toast.LENGTH_SHORT).show();
                         }
                     });
