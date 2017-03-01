@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import com.hyphenate.chat.EMChatManager;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.easeui.controller.EaseUI;

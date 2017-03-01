@@ -33,7 +33,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
-import android.util.Log;
 
 public class EaseCommonUtils {
 	private static final String TAG = "CommonUtils";
