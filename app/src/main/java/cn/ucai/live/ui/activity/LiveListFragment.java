@@ -74,7 +74,7 @@ public class LiveListFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         chatRoomList = new ArrayList<EMChatRoom>();
         rooms = new ArrayList<EMChatRoom>();
-        adapter = new LiveAdapter(getContext(), getLiveRoomList(rooms));
+//        adapter = new LiveAdapter(getContext(), getLiveRoomList(rooms));
         pd = new ProgressDialog(getContext());
         recyclerView = (RecyclerView) getView().findViewById(R.id.recycleview);
 //        View footView = getLayoutInflater().inflate(R.layout.em_listview_footer_view, gm, false);
@@ -84,7 +84,7 @@ public class LiveListFragment extends Fragment {
         recyclerView.setLayoutManager(gm);
         recyclerView.setHasFixedSize(true);
         recyclerView.addItemDecoration(new GridMarginDecoration(6));
-        recyclerView.setAdapter(adapter);
+//        recyclerView.setAdapter(adapter);
 //        recyclerView.setAdapter(new LiveAdapter(getActivity(), TestDataRepository.getLiveRoomList()));
 
 //        footLoadingLayout = (LinearLayout) footView.findViewById(R.id.loading_layout);
@@ -92,7 +92,7 @@ public class LiveListFragment extends Fragment {
 //        footLoadingText = (TextView) footView.findViewById(R.id.loading_text);
 //        listView.addFooterView(footView, null, false);
 //        footLoadingLayout.setVisibility(View.GONE);
-//        loadAndShowData();//加载并显示数据
+        loadAndShowData();//加载并显示数据
         setListener();
     }
 
@@ -137,14 +137,12 @@ public class LiveListFragment extends Fragment {
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if(newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
-                    if(pageCount != 0){
 //                        int lasPos = gm.getLastVisiblePosition();
                         int lasPos = gm.findLastVisibleItemPosition();
 //                        if(hasMoreData && !isLoading && lasPos == ListView.getCount()-1){
-                        if(hasMoreData && !isLoading && lasPos == adapter.getItemCount()-1){
+                        if(hasMoreData && !isLoading && lasPos == chatRoomList.size()-1){
                             loadAndShowData();
                         }
-                    }
                 }
             }
 
@@ -165,6 +163,7 @@ public class LiveListFragment extends Fragment {
                 try {
                     isLoading = true;
 //                    pagenum += 1;
+//                    fetchPublicChatRoomsFromServer(pagesize, cursor);首次为null，默认加载pagesize条数据，后面不是
                     final EMCursorResult<EMChatRoom> result = EMClient.getInstance().chatroomManager().fetchPublicChatRoomsFromServer(pagesize, cursor);
                     final List<EMChatRoom> chatRooms = result.getData();
                     L.e(TAG,""+chatRooms.size());
@@ -179,10 +178,11 @@ public class LiveListFragment extends Fragment {
                             }
                             if(isFirstLoading){
 //                                pb.setVisibility(View.INVISIBLE);
+//                                第一次加载，adapter，这样就不要在上面定义了
                                 pd.dismiss();
                                 isFirstLoading = false;
                                 adapter = new LiveAdapter(getContext(),getLiveRoomList(chatRoomList));
-                                recyclerView.setAdapter(adapter);
+                                recyclerView.setAdapter(adapter);//重复了，
                             }else{
                                 if(chatRooms.size() < pagesize){
                                     hasMoreData = false;
