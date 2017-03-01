@@ -1,5 +1,6 @@
 package cn.ucai.live.ui.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -19,7 +20,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
@@ -33,7 +33,6 @@ import com.ucloud.live.UStreamingProfile;
 import com.ucloud.live.widget.UAspectFrameLayout;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -46,8 +45,11 @@ import cn.ucai.live.data.model.LiveSettings;
 import cn.ucai.live.data.net.IModelUser;
 import cn.ucai.live.data.net.ModelUser;
 import cn.ucai.live.data.net.OnCompleteListener;
+import cn.ucai.live.utils.CommonUtils;
+import cn.ucai.live.utils.L;
 import cn.ucai.live.utils.Log2FileUtil;
 import cn.ucai.live.utils.PreferenceManager;
+import cn.ucai.live.utils.ResultUtils;
 
 public class StartLiveActivity extends LiveBaseActivity
     implements UEasyStreaming.UStreamingStateListener {
@@ -76,7 +78,7 @@ public class StartLiveActivity extends LiveBaseActivity
   private LiveSettings mSettings;
   private UStreamingProfile mStreamingProfile;
   UEasyStreaming.UEncodingType encodingType;
-
+  ProgressDialog pd;
   boolean isStarted;
 
   private Handler handler = new Handler() {
@@ -100,7 +102,7 @@ public class StartLiveActivity extends LiveBaseActivity
 //    chatroomId = TestDataRepository.getChatRoomId(EMClient.getInstance().getCurrentUser());
 //    anchorId = EMClient.getInstance().getCurrentUser();
 //    usernameView.setText(anchorId);
-//    initEnv();//直播流的配置
+    initEnv();//直播流的配置
   }
 
   public void initEnv() {
@@ -180,8 +182,16 @@ public class StartLiveActivity extends LiveBaseActivity
    */
   @OnClick(R.id.btn_start) void startLive() {
     //demo为了测试方便，只有指定的账号才能开启直播
+    pd = new ProgressDialog(StartLiveActivity.this);
+    pd.setMessage("创建直播间...");
+    pd.show();
     User user = EaseUserUtils.getAppUserInfo(PreferenceManager.getInstance().getCurrentUsername());
-    createLive(user);
+    if (user != null){
+      createLive(user);
+    }else{
+      CommonUtils.showLongToast("没有获取到数据");
+    }
+
 //    该方法可以指定特定的用户才能直播
 //    if (liveId == null) {
 //      String[] anchorIds = TestDataRepository.anchorIds;
@@ -195,7 +205,7 @@ public class StartLiveActivity extends LiveBaseActivity
 //    }
   }
 
-  private void startLiveRoom() {
+  private void startLiveByRoom() {
     startContainer.setVisibility(View.INVISIBLE);
     //Utils.hideKeyboard(titleEdit);
     new Thread() {
@@ -224,18 +234,34 @@ public class StartLiveActivity extends LiveBaseActivity
       public void onSuccess(String s) {
 //        得到房间Id
 //        initLive(id);由于得到的数据不规整,自行解析
-        Map map = new Gson().fromJson(s,Map.class);
-        String str = (String) map.get("data");
-//        data:{"id"：“93209131”},
-        Map map2 = new Gson().fromJson(str,Map.class);
-        String id = (String) map2.get("id");
-        initLive(id);
-        startLiveRoom();//成功之后，开启直播间
+        boolean isSuccess = false;
+        L.e(TAG,"S"+s);
+        pd.dismiss();
+        if (s != null){
+
+//          Map map = new Gson().fromJson(s,Map.class);
+//          String str = (String) map.get("data");
+//          L.e(TAG,"str"+str);
+////        data:{"id"：“93209131”},
+//          Map map2 = new Gson().fromJson(str,Map.class);
+//          String id = (String) map2.get("id");
+//          L.e(TAG,"id"+id);
+          String id = ResultUtils.getEMresultFromJson(s);
+          initLive(id);
+          startLiveByRoom();//成功之后，开启直播间
+          isSuccess = !isSuccess;
+        }
+        if (isSuccess){
+          CommonUtils.showLongToast("创建直播间成功");
+        }else{
+          CommonUtils.showLongToast("创建直播间失败");
+        }
       }
 
       @Override
       public void onError(String error) {
-
+        pd.dismiss();
+        CommonUtils.showLongToast("创建直播间失败");
       }
     });
   }

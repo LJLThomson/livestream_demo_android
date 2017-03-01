@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
@@ -79,7 +80,21 @@ public class ResultUtils {
         }
         return  null;
     }
-
+    public static String getEMresultFromJson(String jsonstr){
+        try {
+            JSONObject jsonObject = new JSONObject(jsonstr);
+            if (!jsonObject.isNull("data")){
+                JSONObject data = jsonObject.getJSONObject("data");
+                if (!data.isNull("id")){
+                    String id = data.getString("id");
+                    return id;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 //    public static <T> Result getPageResultFromJson(String jsonStr,Class<T> clazz){
 //        Result result = new Result();
 //        try {
