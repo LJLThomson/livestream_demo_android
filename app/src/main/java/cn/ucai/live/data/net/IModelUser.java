@@ -2,7 +2,7 @@ package cn.ucai.live.data.net;
 
 import android.content.Context;
 
-import com.hyphenate.chat.EMGroup;
+import com.hyphenate.easeui.domain.User;
 
 import java.io.File;
 
@@ -21,17 +21,9 @@ public interface IModelUser {
 
     void getUserByName(Context context, String userName, OnCompleteListener<Result> listener);
 
-    void updateNickName(Context context, String userName, String nickName, OnCompleteListener<Result> listener);
-
     void updateAvator(Context context, String user_name_or_hxid, File file, OnCompleteListener<Result> listener);
-
-    void addcontact(Context context, String user_name, String cname, OnCompleteListener<Result> listener);
-
     void loginContact(Context context, String user_name, OnCompleteListener<Result> listener);
 
-    void removeContact(Context context, String username, String cname, OnCompleteListener<Result> listener);
-
-    void CreateAppGroup(Context context, EMGroup group, File file, OnCompleteListener<Result> listener);
-
-    void addGroupMembers(Context context, String memberNames, String groupId, OnCompleteListener<Result> listener);
+    void updateNickName(Context context, String userName, String nickName, OnCompleteListener<Result> listener);
+    void createChatRoom(Context context, User user, OnCompleteListener<String> listener);
 }

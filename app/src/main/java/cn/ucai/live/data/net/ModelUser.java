@@ -2,7 +2,7 @@ package cn.ucai.live.data.net;
 
 import android.content.Context;
 
-import com.hyphenate.chat.EMGroup;
+import com.hyphenate.easeui.domain.User;
 
 import java.io.File;
 
@@ -79,15 +79,6 @@ public class ModelUser implements IModelUser {
                 .execute(listener);
     }
 
-    @Override
-    public void addcontact(Context context, String user_name, String cname, OnCompleteListener<Result> listener) {
-        OkHttpUtils<Result> utils = new OkHttpUtils<>(context);
-        utils.setRequestUrl(I.REQUEST_ADD_CONTACT)
-                .addParam(I.Contact.USER_NAME, user_name)
-                .addParam(I.Contact.CU_NAME, cname)
-                .targetClass(Result.class)
-                .execute(listener);
-    }
 
     @Override
     public void loginContact(Context context, String user_name, OnCompleteListener<Result> listener) {
@@ -99,38 +90,16 @@ public class ModelUser implements IModelUser {
     }
 
     @Override
-    public void removeContact(Context context, String username, String cname, OnCompleteListener<Result> listener) {
-        OkHttpUtils<Result> utils = new OkHttpUtils<>(context);
-        utils.setRequestUrl(I.REQUEST_DELETE_CONTACT)
-                .addParam(I.Contact.USER_NAME, username)
-                .addParam(I.Contact.CU_NAME, cname)
-                .targetClass(Result.class)
-                .execute(listener);
-    }
-
-    @Override
-    public void CreateAppGroup(Context context, EMGroup group, File file, OnCompleteListener<Result> listener) {
-        OkHttpUtils<Result> utils = new OkHttpUtils<>(context);
-        utils.setRequestUrl(I.REQUEST_CREATE_GROUP)
-                .addParam(I.Group.HX_ID, group.getGroupId())
-                .addParam(I.Group.NAME, group.getGroupName())
-                .addParam(I.Group.DESCRIPTION, group.getDescription())
-                .addParam(I.Group.OWNER, group.getOwner())
-                .addParam(I.Group.IS_PUBLIC, String.valueOf(group.isPublic()))
-                .addParam(I.Group.ALLOW_INVITES, String.valueOf(group.isAllowInvites()))
-                .targetClass(Result.class)
-                .addFile2(file)
-                .post()
-                .execute(listener);
-    }
-
-    @Override
-    public void addGroupMembers(Context context, String memberNames, String groupId, OnCompleteListener<Result> listener) {
-        OkHttpUtils<Result> utils = new OkHttpUtils<>(context);
-        utils.setRequestUrl(I.REQUEST_ADD_GROUP_MEMBERS)
-                .addParam(I.Member.USER_NAME,memberNames)
-                .addParam(I.Member.GROUP_HX_ID,groupId)
-                .targetClass(Result.class)
+    public void createChatRoom(Context context, User user, OnCompleteListener<String> listener) {
+        OkHttpUtils<String> utils = new OkHttpUtils<>(context);
+        utils.setRequestUrl(I.CREATE_CHATROOM)
+                .addParam("auth","1IFgE")
+                .addParam("name",user.getMUserNick())
+                .addParam("description",user.getMUserNick()+"的直播")
+                .addParam("owner",user.getMUserName())
+                .addParam("maxusers","300")
+                .addParam("members",user.getMUserName())
+                .targetClass(String.class)
                 .execute(listener);
     }
 }

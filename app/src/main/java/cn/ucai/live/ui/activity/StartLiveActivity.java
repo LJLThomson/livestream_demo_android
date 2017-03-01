@@ -19,12 +19,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.easeui.controller.EaseUI;
+import com.hyphenate.easeui.domain.User;
 import com.hyphenate.easeui.utils.EaseUserUtils;
-import com.hyphenate.easeui.widget.EaseAlertDialog;
 import com.hyphenate.easeui.widget.EaseImageView;
 import com.ucloud.common.util.DeviceUtils;
 import com.ucloud.live.UEasyStreaming;
@@ -32,6 +33,7 @@ import com.ucloud.live.UStreamingProfile;
 import com.ucloud.live.widget.UAspectFrameLayout;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -41,6 +43,9 @@ import cn.ucai.live.R;
 import cn.ucai.live.data.TestDataRepository;
 import cn.ucai.live.data.model.LiveRoom;
 import cn.ucai.live.data.model.LiveSettings;
+import cn.ucai.live.data.net.IModelUser;
+import cn.ucai.live.data.net.ModelUser;
+import cn.ucai.live.data.net.OnCompleteListener;
 import cn.ucai.live.utils.Log2FileUtil;
 import cn.ucai.live.utils.PreferenceManager;
 
@@ -91,11 +96,11 @@ public class StartLiveActivity extends LiveBaseActivity
     EaseUserUtils.setAppUserAvatar(this, PreferenceManager.getInstance().getCurrentUsername(), userAvatar);
     EaseUserUtils.setAppUserNick(PreferenceManager.getInstance().getCurrentUsername(),usernameView);
 
-    liveId = TestDataRepository.getLiveRoomId(EMClient.getInstance().getCurrentUser());
-    chatroomId = TestDataRepository.getChatRoomId(EMClient.getInstance().getCurrentUser());
-    anchorId = EMClient.getInstance().getCurrentUser();
+//    liveId = TestDataRepository.getLiveRoomId(EMClient.getInstance().getCurrentUser());
+//    chatroomId = TestDataRepository.getChatRoomId(EMClient.getInstance().getCurrentUser());
+//    anchorId = EMClient.getInstance().getCurrentUser();
 //    usernameView.setText(anchorId);
-    initEnv();
+//    initEnv();//直播流的配置
   }
 
   public void initEnv() {
@@ -175,17 +180,22 @@ public class StartLiveActivity extends LiveBaseActivity
    */
   @OnClick(R.id.btn_start) void startLive() {
     //demo为了测试方便，只有指定的账号才能开启直播
-    if (liveId == null) {
-      String[] anchorIds = TestDataRepository.anchorIds;
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < anchorIds.length; i++) {
-        sb.append(anchorIds[i]);
-        if (i != (anchorIds.length - 1)) sb.append(",");
-      }
-      new EaseAlertDialog(this, "demo中只有" + sb.toString() + "这几个账户才能开启直播").show();
-      return;
-    }
+    User user = EaseUserUtils.getAppUserInfo(PreferenceManager.getInstance().getCurrentUsername());
+    createLive(user);
+//    该方法可以指定特定的用户才能直播
+//    if (liveId == null) {
+//      String[] anchorIds = TestDataRepository.anchorIds;
+//      StringBuilder sb = new StringBuilder();
+//      for (int i = 0; i < anchorIds.length; i++) {
+//        sb.append(anchorIds[i]);
+//        if (i != (anchorIds.length - 1)) sb.append(",");
+//      }
+//      new EaseAlertDialog(this, "demo中只有" + sb.toString() + "这几个账户才能开启直播").show();
+//      return;
+//    }
+  }
 
+  private void startLiveRoom() {
     startContainer.setVisibility(View.INVISIBLE);
     //Utils.hideKeyboard(titleEdit);
     new Thread() {
@@ -205,6 +215,35 @@ public class StartLiveActivity extends LiveBaseActivity
         } while (i >= COUNTDOWN_END_INDEX);
       }
     }.start();
+  }
+
+  private void createLive(User user) {
+    IModelUser model = new ModelUser();
+    model.createChatRoom(this, user, new OnCompleteListener<String>() {
+      @Override
+      public void onSuccess(String s) {
+//        得到房间Id
+//        initLive(id);由于得到的数据不规整,自行解析
+        Map map = new Gson().fromJson(s,Map.class);
+        String str = (String) map.get("data");
+//        data:{"id"：“93209131”},
+        Map map2 = new Gson().fromJson(str,Map.class);
+        String id = (String) map2.get("id");
+        initLive(id);
+        startLiveRoom();//成功之后，开启直播间
+      }
+
+      @Override
+      public void onError(String error) {
+
+      }
+    });
+  }
+
+  private void initLive(String id) {
+    liveId = id;
+    chatroomId = id;
+    initEnv();//初始直播流
   }
 
   /**
