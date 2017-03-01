@@ -206,6 +206,7 @@ public class LiveListFragment extends Fragment {
                                 recyclerView.setAdapter(adapter);//重复了，
                             }else{
                                 if(chatRooms.size() < pagesize){
+                                    pd.dismiss();
                                     hasMoreData = false;
                                     footLoadingLayout.setVisibility(View.VISIBLE);
                                     footLoadingPB.setVisibility(View.GONE);
