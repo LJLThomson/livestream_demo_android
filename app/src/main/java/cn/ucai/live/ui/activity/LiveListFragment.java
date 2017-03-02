@@ -248,7 +248,7 @@ public class LiveListFragment extends Fragment {
             LiveRoom liveRoom = new LiveRoom();
             liveRoom.setName(room.getName());
             liveRoom.setAudienceNum(room.getAffiliationsCount());
-            liveRoom.setId(room.getId());
+            liveRoom.setId(room.getOwner());//id为用户名
             liveRoom.setChatroomId(room.getId());
 //            获取头像，
 //            liveRoom.setCover(R.drawable.test1);

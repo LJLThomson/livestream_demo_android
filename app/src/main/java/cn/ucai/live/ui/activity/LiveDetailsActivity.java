@@ -48,7 +48,7 @@ public class LiveDetailsActivity extends LiveBaseActivity implements UVideoView.
         imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
         LiveRoom liveRoom = getIntent().getParcelableExtra("liveroom");
-        liveId = liveRoom.getId();
+        liveId = liveRoom.getId();//得到自己的用户名，
         chatroomId = liveRoom.getChatroomId();
         String coverRes = liveRoom.getCover();
 //        EaseUserUtils.setAppUserAvatar(LiveDetailsActivity.this,liveRoom.getAnchorId(),coverView);

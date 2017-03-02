@@ -112,6 +112,10 @@ public class StartLiveActivity extends LiveBaseActivity
         EaseUserUtils.setAppUserAvatar(this, PreferenceManager.getInstance().getCurrentUsername(), userAvatar);
         EaseUserUtils.setAppUserNick(PreferenceManager.getInstance().getCurrentUsername(), usernameView);
         id = getIntent().getStringExtra("liveId");
+        if (id != null && !id.equals("")) {
+            liveId = id;
+            chatroomId = id;
+        }
 //    liveId = TestDataRepository.getLiveRoomId(EMClient.getInstance().getCurrentUser());
 //    chatroomId = TestDataRepository.getChatRoomId(EMClient.getInstance().getCurrentUser());
 //    anchorId = EMClient.getInstance().getCurrentUser();
@@ -329,8 +333,8 @@ public class StartLiveActivity extends LiveBaseActivity
         removeLive();
         endTIme = System.currentTimeMillis();
 //        由于我们在东八区，System.currentTimeMillis()得到地是伦敦时间
-        long time = endTIme - startTime - 8*60*60*1000;
-        SimpleDateFormat format = new SimpleDateFormat("HH:MM:SS");
+        long time = endTIme - startTime;
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         String t = format.format(new Date(time));
         L.e(TAG,"livetime"+t);
         showConfirmCloseLayout(t);

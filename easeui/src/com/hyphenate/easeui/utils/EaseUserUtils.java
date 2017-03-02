@@ -148,8 +148,12 @@ public class EaseUserUtils {
      * 成员名组成的downloadAvatar
      */
     public static String setAppAvatarByName(String username){
-        String path = "http://101.251.196.91:8888/SuperWeChatServerV2.0/downloadAvatar?name_or_hxid="+username+"&avatarType=user_avatar&m_avatar_suffix=.jpg";
-        return path;
+        if (username!=null){
+            String path = "http://101.251.196.91:8888/SuperWeChatServerV2.0/downloadAvatar?name_or_hxid="+username+"&avatarType=user_avatar&m_avatar_suffix=.jpg";
+            return path;
+        }else{
+            return null;
+        }
     }
     /**
      * 从服务端下载图片信息
