@@ -144,4 +144,27 @@ public class EaseUserUtils {
             }
         }
     }
+    /**
+     * 成员名组成的downloadAvatar
+     */
+    public static String setAppAvatarByName(String username){
+        String path = "http://101.251.196.91:8888/SuperWeChatServerV2.0/downloadAvatar?name_or_hxid="+username+"&avatarType=user_avatar&m_avatar_suffix=.jpg";
+        return path;
+    }
+    /**
+     * 从服务端下载图片信息
+     */
+    public static void setAppUserAvatarFromService(Context context, String path, ImageView imageView){
+        if (path != null){
+            try {
+                int avatarResId = Integer.parseInt(path);
+                Glide.with(context).load(avatarResId).into(imageView);
+            } catch (Exception e) {
+                //use default avatar
+                Glide.with(context).load(path).diskCacheStrategy(DiskCacheStrategy.ALL).placeholder(R.drawable.default_hd_avatar).into(imageView);
+            }
+        }else{
+            Glide.with(context).load(R.drawable.default_hd_avatar).into(imageView);
+        }
+    }
 }

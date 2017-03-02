@@ -340,7 +340,8 @@ public class StartLiveActivity extends LiveBaseActivity
         List<LiveRoom> liveRoomList = TestDataRepository.getLiveRoomList();
         for (LiveRoom liveRoom : liveRoomList) {
             if (liveRoom.getId().equals(liveId)) {
-                coverImage.setImageResource(liveRoom.getCover());
+//                coverImage.setImageResource(liveRoom.getCover());
+                EaseUserUtils.setAppUserAvatar(StartLiveActivity.this,liveRoom.getAnchorId(),coverImage);
             }
         }
         View view = liveEndLayout.inflate();

@@ -28,6 +28,7 @@ import com.hyphenate.EMChatRoomChangeListener;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.easeui.utils.EaseUserUtils;
 import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.ArrayList;
@@ -157,8 +158,8 @@ public class LiveListFragment extends Fragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-//                int firstPostion = gm.findFirstVisibleItemPosition();//可见的第一行，判断是否为第一行，
-//                tvRefreshLayout.setEnabled(firstPostion == 0);//来判断*/
+                int firstPostion = gm.findFirstVisibleItemPosition();//可见的第一行，判断是否为第一行，
+                mRefreshLayout.setEnabled(firstPostion == 0);//来判断*/
 //                这里可以解决刷新之后，网络请求不到数据，我们可以设置
             }
         });
@@ -238,7 +239,7 @@ public class LiveListFragment extends Fragment {
     }
 
     /**
-     * 生成测试数据
+     * 群聊组转化成直播间
      */
     public static List<LiveRoom> getLiveRoomList(List<EMChatRoom> chatRooms) {
         List<LiveRoom> roomList = new ArrayList<>();
@@ -248,7 +249,10 @@ public class LiveListFragment extends Fragment {
             liveRoom.setAudienceNum(room.getAffiliationsCount());
             liveRoom.setId(room.getId());
             liveRoom.setChatroomId(room.getId());
-            liveRoom.setCover(R.drawable.test1);
+//            获取头像，
+//            liveRoom.setCover(R.drawable.test1);
+//            liveRoom.setCover(EaseUserUtils.getAppUserInfo(PreferenceManager.getInstance().getCurrentUsername()).getAvatar());
+            liveRoom.setCover(EaseUserUtils.setAppAvatarByName(room.getOwner()));
             liveRoom.setAnchorId(room.getOwner());
             L.e(TAG, "liveRoom" + liveRoom.toString());
             roomList.add(liveRoom);
