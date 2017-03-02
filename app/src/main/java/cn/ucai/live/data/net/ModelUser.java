@@ -102,4 +102,14 @@ public class ModelUser implements IModelUser {
                 .targetClass(String.class)
                 .execute(listener);
     }
+
+    @Override
+    public void deleteChatRoom(Context context, String ChatRoomId, OnCompleteListener<String> listener) {
+        OkHttpUtils<String> utils = new OkHttpUtils<>(context);
+        utils.setRequestUrl(I.DELETE_CHATROOM)
+                .addParam("auth","1IFgE")
+                .addParam("chatRoomId",ChatRoomId)
+                .targetClass(String.class)
+                 .execute(listener);
+    }
 }

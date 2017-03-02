@@ -40,6 +40,7 @@ import cn.ucai.live.R;
 import cn.ucai.live.data.model.LiveRoom;
 import cn.ucai.live.ui.GridMarginDecoration;
 import cn.ucai.live.utils.L;
+import cn.ucai.live.utils.PreferenceManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -285,6 +286,7 @@ public class LiveListFragment extends Fragment {
                         context.startActivity(new Intent(context, StartLiveActivity.class)
                                 .putExtra("liveId", room.getId()));
                     } else {
+//                        不是自己，进入别人的直播间
                         context.startActivity(new Intent(context, LiveDetailsActivity.class)
                                 .putExtra("liveroom", liveRoomList.get(position)));
                     }
@@ -298,10 +300,14 @@ public class LiveListFragment extends Fragment {
             LiveRoom liveRoom = liveRoomList.get(position);
             holder.anchor.setText(liveRoom.getName());
             holder.audienceNum.setText(liveRoom.getAudienceNum() + "人");
-            Glide.with(context)
-                    .load(liveRoomList.get(position).getCover())
-                    .placeholder(R.color.placeholder)
-                    .into(holder.imageView);
+            if (liveRoomList.get(position).getAnchorId().equals(EMClient.getInstance().getCurrentUser())){
+                EaseUserUtils.setAppUserAvatar(context, PreferenceManager.getInstance().getCurrentUsername(),holder.imageView);
+            }else{
+                Glide.with(context)
+                        .load(liveRoomList.get(position).getCover())
+                        .placeholder(R.color.placeholder)
+                        .into(holder.imageView);
+            }
         }
 
         @Override

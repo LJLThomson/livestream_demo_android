@@ -290,4 +290,8 @@ public interface I {
      * 创建直播室
      */
     String CREATE_CHATROOM = "live/createChatRoom";
+    /**
+     * 删除直播间
+     */
+    String DELETE_CHATROOM = "live/deleteChatRoom";
 }

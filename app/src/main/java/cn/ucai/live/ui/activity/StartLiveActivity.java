@@ -91,7 +91,7 @@ public class StartLiveActivity extends LiveBaseActivity
     UEasyStreaming.UEncodingType encodingType;
     ProgressDialog pd;
     boolean isStarted;
-
+    String id;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -110,28 +110,12 @@ public class StartLiveActivity extends LiveBaseActivity
         ButterKnife.bind(this);
         EaseUserUtils.setAppUserAvatar(this, PreferenceManager.getInstance().getCurrentUsername(), userAvatar);
         EaseUserUtils.setAppUserNick(PreferenceManager.getInstance().getCurrentUsername(), usernameView);
-        String id = getIntent().getStringExtra("liveId");
-        if (id != null && !id.equals("")) {
-            liveId = id;
-            chatroomId = id;
-            initEnv();
-        } else {
-            pd = new ProgressDialog(StartLiveActivity.this);
-            pd.setMessage("创建直播间...");
-            pd.show();
-            User user = EaseUserUtils.getAppUserInfo(PreferenceManager.getInstance().getCurrentUsername());
-            L.e(TAG, "USER" + user.toString());
-            if (user != null) {
-                createLive(user);
-            } else {
-                CommonUtils.showLongToast("没有获取到数据");
-            }
-        }
+        id = getIntent().getStringExtra("liveId");
 //    liveId = TestDataRepository.getLiveRoomId(EMClient.getInstance().getCurrentUser());
 //    chatroomId = TestDataRepository.getChatRoomId(EMClient.getInstance().getCurrentUser());
 //    anchorId = EMClient.getInstance().getCurrentUser();
 //    usernameView.setText(anchorId);
-//    initEnv();//直播流的配置
+        initEnv();//直播流的配置,下载创建时（子线程），程序是不会等待的，mEasyStreaming就报空指针
     }
 
     public void initEnv() {
@@ -143,6 +127,7 @@ public class StartLiveActivity extends LiveBaseActivity
 
         //        UStreamingProfile.Stream stream = new UStreamingProfile.Stream(rtmpPushStreamDomain, "ucloud/" + mSettings.getPusblishStreamId());
         //hardcode
+//        liveId没用，我们使用的是ChatRoomId
         UStreamingProfile.Stream stream =
                 new UStreamingProfile.Stream(rtmpPushStreamDomain, "ucloud/" + liveId);
 
@@ -217,7 +202,24 @@ public class StartLiveActivity extends LiveBaseActivity
      */
     @OnClick(R.id.btn_start)
     void startLive() {
-        startLiveByRoom();//成功之后，开启直播间
+        if (id != null && !id.equals("")) {
+            liveId = id;
+            chatroomId = id;
+            initEnv();
+            startLiveByRoom();
+        } else {
+            pd = new ProgressDialog(StartLiveActivity.this);
+            pd.setMessage("创建直播间...");
+            pd.show();
+            User user = EaseUserUtils.getAppUserInfo(PreferenceManager.getInstance().getCurrentUsername());
+            L.e(TAG, "USER" + user.toString());
+            if (user != null) {
+                createLive(user);
+            } else {
+                CommonUtils.showLongToast("没有获取到数据");
+            }
+        }
+        //成功之后，开启直播间
 //        //demo为了测试方便，只有指定的账号才能开启直播
 //        pd = new ProgressDialog(StartLiveActivity.this);
 //        pd.setMessage("创建直播间...");
@@ -286,6 +288,7 @@ public class StartLiveActivity extends LiveBaseActivity
 //          L.e(TAG,"id"+id);
                     String id = ResultUtils.getEMresultFromJson(s);
                     initLive(id);
+                    startLiveByRoom();
                     isSuccess = !isSuccess;
                 }
                 if (isSuccess) {
@@ -316,10 +319,29 @@ public class StartLiveActivity extends LiveBaseActivity
     void closeLive() {
         mEasyStreaming.stopRecording();
         if (!isStarted) {
+//            当前不是直播时，直接退出，不显示成果
             finish();
             return;
         }
+//        当前是直播时，显示成果，并删除当前chatRoom
+        removeLive();
         showConfirmCloseLayout();
+    }
+
+    private void removeLive() {
+        IModelUser model = new ModelUser();
+        model.deleteChatRoom(StartLiveActivity.this, chatroomId, new OnCompleteListener<String>() {
+            @Override
+            public void onSuccess(String s) {
+                L.e(TAG,"s"+s.toString());
+                String id = ResultUtils.getEMresultFromJson(s);
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
     }
 
     @OnClick(R.id.img_bt_switch_voice)
@@ -341,7 +363,7 @@ public class StartLiveActivity extends LiveBaseActivity
         for (LiveRoom liveRoom : liveRoomList) {
             if (liveRoom.getId().equals(liveId)) {
 //                coverImage.setImageResource(liveRoom.getCover());
-                EaseUserUtils.setAppUserAvatar(StartLiveActivity.this,liveRoom.getAnchorId(),coverImage);
+                EaseUserUtils.setAppUserAvatar(StartLiveActivity.this, liveRoom.getAnchorId(), coverImage);
             }
         }
         View view = liveEndLayout.inflate();

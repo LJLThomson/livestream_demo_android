@@ -22,8 +22,12 @@ public interface IModelUser {
     void getUserByName(Context context, String userName, OnCompleteListener<Result> listener);
 
     void updateAvator(Context context, String user_name_or_hxid, File file, OnCompleteListener<Result> listener);
+
     void loginContact(Context context, String user_name, OnCompleteListener<Result> listener);
 
     void updateNickName(Context context, String userName, String nickName, OnCompleteListener<Result> listener);
+
     void createChatRoom(Context context, User user, OnCompleteListener<String> listener);
+
+    void deleteChatRoom(Context context,String ChatRoomId,OnCompleteListener<String> listener);
 }
