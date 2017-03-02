@@ -32,15 +32,14 @@ import com.ucloud.live.UEasyStreaming;
 import com.ucloud.live.UStreamingProfile;
 import com.ucloud.live.widget.UAspectFrameLayout;
 
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.ucai.live.R;
-import cn.ucai.live.data.TestDataRepository;
-import cn.ucai.live.data.model.LiveRoom;
 import cn.ucai.live.data.model.LiveSettings;
 import cn.ucai.live.data.net.IModelUser;
 import cn.ucai.live.data.net.ModelUser;
@@ -92,6 +91,8 @@ public class StartLiveActivity extends LiveBaseActivity
     ProgressDialog pd;
     boolean isStarted;
     String id;
+    long startTime;
+    long endTIme;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -293,6 +294,7 @@ public class StartLiveActivity extends LiveBaseActivity
                 }
                 if (isSuccess) {
                     CommonUtils.showLongToast("创建直播间成功");
+                    startTime = System.currentTimeMillis();
                 } else {
                     CommonUtils.showLongToast("创建直播间失败");
                 }
@@ -325,7 +327,13 @@ public class StartLiveActivity extends LiveBaseActivity
         }
 //        当前是直播时，显示成果，并删除当前chatRoom
         removeLive();
-        showConfirmCloseLayout();
+        endTIme = System.currentTimeMillis();
+//        由于我们在东八区，System.currentTimeMillis()得到地是伦敦时间
+        long time = endTIme - startTime - 8*60*60*1000;
+        SimpleDateFormat format = new SimpleDateFormat("HH:MM:SS");
+        String t = format.format(new Date(time));
+        L.e(TAG,"livetime"+t);
+        showConfirmCloseLayout(t);
     }
 
     private void removeLive() {
@@ -356,20 +364,24 @@ public class StartLiveActivity extends LiveBaseActivity
         }
     }
 
-    private void showConfirmCloseLayout() {
+    private void showConfirmCloseLayout(String time) {
         //显示封面
         coverImage.setVisibility(View.VISIBLE);
-        List<LiveRoom> liveRoomList = TestDataRepository.getLiveRoomList();
-        for (LiveRoom liveRoom : liveRoomList) {
-            if (liveRoom.getId().equals(liveId)) {
-//                coverImage.setImageResource(liveRoom.getCover());
-                EaseUserUtils.setAppUserAvatar(StartLiveActivity.this, liveRoom.getAnchorId(), coverImage);
-            }
-        }
+//        List<LiveRoom> liveRoomList = TestDataRepository.getLiveRoomList();
+//        for (LiveRoom liveRoom : liveRoomList) {
+//            if (liveRoom.getId().equals(liveId)) {
+////                coverImage.setImageResource(liveRoom.getCover());
+//                EaseUserUtils.setAppUserAvatar(StartLiveActivity.this, liveRoom.getAnchorId(), coverImage);
+//            }
+//        }
         View view = liveEndLayout.inflate();
+        EaseImageView userAvatar = (EaseImageView) view.findViewById(R.id.userImage);
         Button closeConfirmBtn = (Button) view.findViewById(R.id.live_close_confirm);
         TextView usernameView = (TextView) view.findViewById(R.id.tv_username);
-        usernameView.setText(EMClient.getInstance().getCurrentUser());
+        TextView timetext = (TextView) view.findViewById(R.id.textView3);
+        EaseUserUtils.setAppUserAvatar(StartLiveActivity.this, PreferenceManager.getInstance().getCurrentUsername(), userAvatar);
+        EaseUserUtils.setAppUserNick(PreferenceManager.getInstance().getCurrentUsername(),usernameView);
+        timetext.setText(time);
         closeConfirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

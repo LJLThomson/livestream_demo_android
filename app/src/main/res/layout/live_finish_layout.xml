@@ -13,13 +13,14 @@
       android:orientation="vertical"
       android:gravity="center_horizontal"
       >
-    <com.hyphenate.easeui.widget.EaseImageView
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:src="@drawable/ease_default_avatar"
-        android:layout_marginTop="100dp"
-        />
-    <TextView
+      <com.hyphenate.easeui.widget.EaseImageView
+          android:id="@+id/userImage"
+          android:layout_width="60dp"
+          android:layout_height="60dp"
+          android:src="@drawable/ease_default_avatar"
+          android:layout_marginTop="100dp"
+          />
+      <TextView
         android:id="@+id/tv_username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,13 +36,13 @@
         style="@style/LiveEndTitleStyle"
         android:text="直播时间"
         />
-    <TextView
-        style="@style/LiveEndTextStyle"
-        android:text="32:21"
-        android:layout_marginTop="5dp"
-        />
+      <TextView
+          style="@style/LiveEndTextStyle"
+          android:text="32:21"
+          android:layout_marginTop="5dp"
+          android:id="@+id/textView3"/>
 
-    <LinearLayout
+      <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -53,11 +54,13 @@
           android:orientation="vertical"
           >
         <TextView
+
             style="@style/LiveEndTitleStyle"
             android:text="观看人数"
             android:layout_marginTop="2dp"
             />
         <TextView
+            android:id="@+id/liveNumber"
             style="@style/LiveEndTextStyle"
             android:layout_marginTop="5dp"
             android:text="2342"
@@ -70,12 +73,13 @@
           android:orientation="vertical"
           android:layout_marginLeft="100dp"
           >
-        <TextView
-            style="@style/LiveEndTitleStyle"
-            android:text="喜欢"
-            android:layout_marginTop="2dp"
-            />
-        <TextView
+          <TextView
+              style="@style/LiveEndTitleStyle"
+              android:text="喜欢"
+              android:layout_marginTop="2dp"
+              android:id="@+id/textView2"/>
+          <TextView
+              android:id="@+id/likeNumber"
             style="@style/LiveEndTextStyle"
             android:layout_marginTop="5dp"
             android:text="8312"
