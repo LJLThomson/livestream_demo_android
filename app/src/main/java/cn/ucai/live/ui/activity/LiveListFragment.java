@@ -51,7 +51,7 @@ public class LiveListFragment extends Fragment {
     private boolean isFirstLoading = true;
     private boolean hasMoreData = true;
     private String cursor;
-    private final int pagesize = 20;
+    private final int pagesize = 4;
     private LinearLayout footLoadingLayout;
     private ProgressBar footLoadingPB;
     private TextView footLoadingText;
@@ -83,7 +83,7 @@ public class LiveListFragment extends Fragment {
         recyclerView = (RecyclerView) getView().findViewById(R.id.recycleview);
 //        View footView = getLayoutInflater().inflate(R.layout.em_listview_footer_view, gm, false);
 //        GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
-        gm = new GridLayoutManager(getActivity(),2);
+        gm = new GridLayoutManager(getActivity(), 2);
 
         recyclerView.setLayoutManager(gm);
         recyclerView.setHasFixedSize(true);
@@ -95,7 +95,7 @@ public class LiveListFragment extends Fragment {
 
         mRefreshHint = (TextView) getView().findViewById(R.id.mRefreshHint);
         footLoadingLayout = (LinearLayout) getView().findViewById(R.id.loading_layout);
-        footLoadingPB = (ProgressBar)getView().findViewById(R.id.loading_bar);
+        footLoadingPB = (ProgressBar) getView().findViewById(R.id.loading_bar);
         footLoadingText = (TextView) getView().findViewById(R.id.loading_text);
 //        listView.addFooterView(getView(), null, false);
         footLoadingLayout.setVisibility(View.GONE);
@@ -105,16 +105,16 @@ public class LiveListFragment extends Fragment {
     }
 
     private void setListener() {
-        EMClient.getInstance().chatroomManager().addChatRoomChangeListener(new EMChatRoomChangeListener(){
+        EMClient.getInstance().chatroomManager().addChatRoomChangeListener(new EMChatRoomChangeListener() {
             @Override
             public void onChatRoomDestroyed(String roomId, String roomName) {
                 chatRoomList.clear();
-                if(adapter != null){
-                    getActivity().runOnUiThread(new Runnable(){
+                if (adapter != null) {
+                    getActivity().runOnUiThread(new Runnable() {
 
                         @Override
                         public void run() {
-                            if(adapter != null){
+                            if (adapter != null) {
                                 adapter.notifyDataSetChanged();
                                 loadAndShowData();
                             }
@@ -144,13 +144,13 @@ public class LiveListFragment extends Fragment {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if(newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
+                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
 //                        int lasPos = gm.getLastVisiblePosition();
-                        int lasPos = gm.findLastVisibleItemPosition();
+                    int lasPos = gm.findLastVisibleItemPosition();
 //                        if(hasMoreData && !isLoading && lasPos == ListView.getCount()-1){
-                        if(hasMoreData && !isLoading && lasPos == chatRoomList.size()-1){
-                            loadAndShowData();
-                        }
+                    if (hasMoreData && !isLoading && lasPos == chatRoomList.size() - 1) {
+                        loadAndShowData();
+                    }
                 }
             }
 
@@ -169,13 +169,15 @@ public class LiveListFragment extends Fragment {
                 mRefreshLayout.setEnabled(true);
                 mRefreshHint.setVisibility(View.VISIBLE);
                 cursor = null;
-                isFirstLoading = true;
+                chatRoomList.clear();
+                //开始时已经加载过，但注意这里这样写会造成recyclerView.setAdapter(adapter);重复
+//                isFirstLoading = true;
                 loadAndShowData();
             }
         });
     }
 
-    private void loadAndShowData(){
+    private void loadAndShowData() {
 //        下载需要新开子线程是，最好不要在主线程
         new Thread(new Runnable() {
             public void run() {
@@ -185,27 +187,27 @@ public class LiveListFragment extends Fragment {
 //                    fetchPublicChatRoomsFromServer(pagesize, cursor);首次为null，默认加载pagesize条数据，后面不是
                     final EMCursorResult<EMChatRoom> result = EMClient.getInstance().chatroomManager().fetchPublicChatRoomsFromServer(pagesize, cursor);
                     final List<EMChatRoom> chatRooms = result.getData();
-                    L.e(TAG,""+chatRooms.size());
+                    L.e(TAG, "" + chatRooms.size());
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
 //                            groupsList.addAll(returnGroups);
                             mRefreshLayout.setRefreshing(false);
                             mRefreshHint.setVisibility(View.GONE);
                             chatRoomList.addAll(chatRooms);
-                            if(chatRooms.size() != 0){
+                            if (chatRooms.size() != 0) {
                                 cursor = result.getCursor();
-                                if(chatRooms.size() == pagesize)
+                                if (chatRooms.size() == pagesize)
                                     footLoadingLayout.setVisibility(View.VISIBLE);
                             }
-                            if(isFirstLoading){
+                            if (isFirstLoading) {
 //                                pb.setVisibility(View.INVISIBLE);
 //                                第一次加载，adapter，这样就不要在上面定义了
                                 pd.dismiss();
                                 isFirstLoading = false;
-                                adapter = new LiveAdapter(getContext(),getLiveRoomList(chatRoomList));
+                                adapter = new LiveAdapter(getContext(), getLiveRoomList(chatRoomList));
                                 recyclerView.setAdapter(adapter);//重复了，
-                            }else{
-                                if(chatRooms.size() < pagesize){
+                            } else {
+                                if (chatRooms.size() < pagesize) {
                                     pd.dismiss();
                                     hasMoreData = false;
                                     footLoadingLayout.setVisibility(View.VISIBLE);
@@ -234,12 +236,13 @@ public class LiveListFragment extends Fragment {
             }
         }).start();
     }
+
     /**
      * 生成测试数据
      */
     public static List<LiveRoom> getLiveRoomList(List<EMChatRoom> chatRooms) {
         List<LiveRoom> roomList = new ArrayList<>();
-        for (EMChatRoom room:chatRooms) {
+        for (EMChatRoom room : chatRooms) {
             LiveRoom liveRoom = new LiveRoom();
             liveRoom.setName(room.getName());
             liveRoom.setAudienceNum(room.getAffiliationsCount());
@@ -247,6 +250,7 @@ public class LiveListFragment extends Fragment {
             liveRoom.setChatroomId(room.getId());
             liveRoom.setCover(R.drawable.test1);
             liveRoom.setAnchorId(room.getOwner());
+            L.e(TAG, "liveRoom" + liveRoom.toString());
             roomList.add(liveRoom);
         }
 
@@ -258,10 +262,11 @@ public class LiveListFragment extends Fragment {
         private final List<LiveRoom> liveRoomList;
         private final Context context;
 
-        public LiveAdapter(Context context, List<LiveRoom> liveRoomList){
+        public LiveAdapter(Context context, List<LiveRoom> liveRoomList) {
             this.liveRoomList = liveRoomList;
             this.context = context;
         }
+
         @Override
         public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             final PhotoViewHolder holder = new PhotoViewHolder(LayoutInflater.from(context).
@@ -271,8 +276,14 @@ public class LiveListFragment extends Fragment {
                 public void onClick(View v) {
                     final int position = holder.getAdapterPosition();
                     if (position == RecyclerView.NO_POSITION) return;
-                    context.startActivity(new Intent(context, LiveDetailsActivity.class)
-                            .putExtra("liveroom", liveRoomList.get(position)));
+                    LiveRoom room = liveRoomList.get(position);
+                    if (room.getAnchorId().equals(EMClient.getInstance().getCurrentUser())) {
+                        context.startActivity(new Intent(context, StartLiveActivity.class)
+                                .putExtra("liveId", room.getId()));
+                    } else {
+                        context.startActivity(new Intent(context, LiveDetailsActivity.class)
+                                .putExtra("liveroom", liveRoomList.get(position)));
+                    }
                 }
             });
             return holder;
@@ -300,7 +311,8 @@ public class LiveListFragment extends Fragment {
         ImageView imageView;
         @BindView(R.id.author)
         TextView anchor;
-        @BindView(R.id.audience_num) TextView audienceNum;
+        @BindView(R.id.audience_num)
+        TextView audienceNum;
 
         public PhotoViewHolder(View itemView) {
             super(itemView);

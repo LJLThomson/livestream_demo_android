@@ -95,7 +95,7 @@ public class ModelUser implements IModelUser {
         utils.setRequestUrl(I.CREATE_CHATROOM)
                 .addParam("auth","1IFgE")
                 .addParam("name",user.getMUserNick())
-                .addParam("description",user.getMUserNick())
+                .addParam("description",user.getMUserNick()+"的直播间")
                 .addParam("owner",user.getMUserName())
                 .addParam("maxusers","300")
                 .addParam("members",user.getMUserName())

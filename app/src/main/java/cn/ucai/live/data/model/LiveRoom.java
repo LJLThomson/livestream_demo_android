@@ -12,6 +12,19 @@ public class LiveRoom implements Parcelable {
     private int audienceNum;
     private int cover;
     private String chatroomId;
+
+    @Override
+    public String toString() {
+        return "LiveRoom{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", audienceNum=" + audienceNum +
+                ", cover=" + cover +
+                ", chatroomId='" + chatroomId + '\'' +
+                ", anchorId='" + anchorId + '\'' +
+                '}';
+    }
+
     private String anchorId;
 
     public String getId() {
